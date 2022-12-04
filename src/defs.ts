@@ -31,7 +31,7 @@ export const ADC_CONTROL = 0 // default
 export const MANUAL = 1
 
 
-
+export const VOLTAGE_LSB_MA = 25.6
 
 
 

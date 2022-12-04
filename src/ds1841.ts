@@ -48,14 +48,14 @@ export class DS1841 {
       ..._decodeControls(profile),
 
     	// IRV or Wiper value
-      value: profile.value,
+      value: Converter.decodeIRV(profile.value),
       wiper: Converter.decodeWIPER(profile.wiper),
 
 			lutIndex: Converter.decodeLUTIndex(profile.lutAddr),
 
 			// ADC updated sensor values
 			temperatureC: Converter.decodeTemperature(profile.temp),
-			supplyVoltage: Converter.decodeVoltage(profile.volt),
+			mVoltage: Converter.decodeVoltage(profile.volt),
 
 			lut: Converter.decodeLUT(profile.lut)
     }

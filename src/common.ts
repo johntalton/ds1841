@@ -78,6 +78,11 @@ export class Common {
 	// }
 
 	static async getLUT(bus: I2CAddressedBus) {
+		const first = await bus.readI2cBlock(REGISTER.LUT_START + 10, 32)
+		// const second = await bus.readI2cBlock(REGISTER.LUT_START + 32, 32)
+
+		return first
+
 		return bus.readI2cBlock(REGISTER.LUT_START, LUT_SIZE)
 	}
 

@@ -1,7 +1,7 @@
 import { BitSmush } from '@johntalton/bitsmush'
 import { ConverterBufferSource } from './defs.js'
 
-
+import { REGISTER, VOLTAGE_LSB_MA } from './defs.js'
 
 export class Converter {
 	static decodeIRV(source: ConverterBufferSource) {
@@ -10,11 +10,7 @@ export class Converter {
 			new DataView(source, 0, source.byteLength)
 
 		if (buffer.byteLength !== 1) { throw new Error('invalid length') }
-		const irv = buffer.getUint8(0)
-
-		return {
-			value: irv
-		}
+		return buffer.getUint8(0)
 	}
 
 	static decodeWIPER(source: ConverterBufferSource) {
@@ -23,11 +19,7 @@ export class Converter {
 			new DataView(source, 0, source.byteLength)
 
 		if (buffer.byteLength !== 1) { throw new Error('invalid length') }
-		const wr = buffer.getUint8(0)
-
-		return {
-			wiper: wr
-		}
+		return buffer.getUint8(0)
 	}
 
 	static decodeCR0(source: ConverterBufferSource) {
@@ -79,7 +71,7 @@ export class Converter {
 		}
 	}
 
-	static decodeTemperature(source: ConverterBufferSource) {
+	static decodeTemperature(source: ConverterBufferSource): number {
 		const buffer = ArrayBuffer.isView(source) ?
 			new DataView(source.buffer, source.byteOffset, source.byteLength) :
 			new DataView(source, 0, source.byteLength)
@@ -88,42 +80,37 @@ export class Converter {
 		const result = buffer.getUint8(0)
 
 		// result is greater than or equal to 128, subtract 256 from the result
-		const c = result >= 128 ? result - 256 : result
-
-		return {
-			temperatureC: c
-		}
+		return result >= 128 ? result - 256 : result
 	}
 
-	static decodeVoltage(source: ConverterBufferSource) {
+	static decodeVoltage(source: ConverterBufferSource): number {
 		const buffer = ArrayBuffer.isView(source) ?
 			new DataView(source.buffer, source.byteOffset, source.byteLength) :
 			new DataView(source, 0, source.byteLength)
 
 		if (buffer.byteLength !== 1) { throw new Error('invalid length') }
-		const mV = buffer.getUint8(0)
 
-		return {
-			mV
-		}
+		return buffer.getUint8(0) * VOLTAGE_LSB_MA
 	}
 
 	//
 
-	static decodeLUTIndex(source: ConverterBufferSource) {
+	static decodeLUTIndex(source: ConverterBufferSource): number {
+		const lutAddress = Converter.decodeLUTAddress(source)
+
+		return lutAddress - REGISTER.LUT_START
+	}
+
+	static decodeLUTAddress(source: ConverterBufferSource): number {
 		const buffer = ArrayBuffer.isView(source) ?
 			new DataView(source.buffer, source.byteOffset, source.byteLength) :
 			new DataView(source, 0, source.byteLength)
 
 		if (buffer.byteLength !== 1) { throw new Error('invalid length') }
-		const lutIndex = buffer.getUint8(0)
-
-		return {
-			lutIndex
-		}
+		return buffer.getUint8(0)
 	}
 
-	static decodeLUT(source: ConverterBufferSource) {
+	static decodeLUT(source: ConverterBufferSource): { [key: number]: number } {
 		const buffer = ArrayBuffer.isView(source) ?
 			new DataView(source.buffer, source.byteOffset, source.byteLength) :
 			new DataView(source, 0, source.byteLength)
@@ -131,12 +118,12 @@ export class Converter {
 		const uint = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength)
 
 		return uint.reduce((acc: { [key: number]: number }, value, index) => {
-			acc[index] = value
+			acc[index + 10] = value
 			return acc
 		}, { })
 	}
 
-	static decodeLUTValue(source: ConverterBufferSource) {
+	static decodeLUTValue(source: ConverterBufferSource): number {
 		const buffer = ArrayBuffer.isView(source) ?
 			new DataView(source.buffer, source.byteOffset, source.byteLength) :
 			new DataView(source, 0, source.byteLength)

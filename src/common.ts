@@ -16,7 +16,7 @@ const REGISTER = {
 
 const REGISTER_LUT_MIN_TEMP = REGISTER.LUT_START
 const REGISTER_LUT_MAX_TEMP = 0xC7
-
+const LUT_SIZE = 72
 
 export const MODE_SET_AND_UPDATE = 0 //default
 export const MODE_UPDATE_ONLY = 1
@@ -70,15 +70,7 @@ export class Common {
 	}
 
 	static async getCR0(bus: I2CAddressedBus) {
-		const cr0Buffer = await bus.readI2cBlock(REGISTER.CR0, 1)
-		if (cr0Buffer.byteLength !== 1) { throw new Error('read returned incorrect bytes length') }
-		const cr0 = (new Uint8Array(cr0Buffer))[0]
-
-		const mode = BitSmush.extractBits(cr0, 7, 1)
-
-		return {
-			mode
-		}
+		return bus.readI2cBlock(REGISTER.CR0, 1)
 	}
 
 	static async setCR0(bus: I2CAddressedBus, mode) {
@@ -86,17 +78,7 @@ export class Common {
 	}
 
 	static async getCR1(bus: I2CAddressedBus) {
-		const cr1Buffer = await bus.readI2cBlock(REGISTER.CR1, 1)
-		if (cr1Buffer.byteLength !== 1) { throw new Error('read returned incorrect bytes length') }
-		const cr1 = (new Uint8Array(cr1Buffer))[0]
-
-		const updateMode = BitSmush.extractBits(cr1, 0, 1)
-		const addressMode = BitSmush.extractBits(cr1, 1, 1)
-
-		return {
-			updateMode,
-			addressMode
-		}
+		return bus.readI2cBlock(REGISTER.CR1, 1)
 	}
 
 	static async setCR1(bus: I2CAddressedBus, updateMode, addressMode) {
@@ -104,17 +86,7 @@ export class Common {
 	}
 
 	static async getCR2(bus: I2CAddressedBus) {
-		const cr2Buffer = await bus.readI2cBlock(REGISTER.CR1, 1)
-		if (cr2Buffer.byteLength !== 1) { throw new Error('read returned incorrect bytes length') }
-		const cr2 = (new Uint8Array(cr2Buffer))[0]
-
-		const wiperAccessControl = BitSmush.extractBits(cr2, 0, 1)
-		const lutIndexMode = BitSmush.extractBits(cr2, 1, 1)
-
-		return {
-			wiperAccessControl,
-			lutIndexMode
-		}
+		return bus.readI2cBlock(REGISTER.CR1, 1)
 	}
 
 	static async setCR2(bus: I2CAddressedBus, wiperAccessControl, lutIndexMode) {
@@ -138,7 +110,6 @@ export class Common {
 	}
 
 	static async getLUT(bus: I2CAddressedBus) {
-		const LUT_SIZE = 72
 		return bus.readI2cBlock(REGISTER.LUT_START, LUT_SIZE)
 	}
 

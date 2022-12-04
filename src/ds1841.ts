@@ -12,11 +12,15 @@ export class DS1841 {
 		this.#bus = bus
 	}
 
-  getProfile() { return Common.getProfile(this.#bus) }
+  async getProfile() { return Common.getProfile(this.#bus) }
 
-  getCR2() { return Common.getCR2(this.#bus) }
+  async getCR0() { return Converter.decodeCR0(await Common.getCR0(this.#bus)) }
 
-  getTemperature() { return Common.getTemperature(this.#bus) }
+  async getCR1() { return Converter.decodeCR1(await Common.getCR1(this.#bus)) }
 
-  getVoltage() { return Converter.decodeVoltage(Common.getVoltage(this.#bus)) }
+  async getCR2() { return Converter.decodeCR2(await Common.getCR2(this.#bus)) }
+
+  async getTemperature() { return Converter.decodeTemperature(await Common.getTemperature(this.#bus)) }
+
+  async getVoltage() { return Converter.decodeVoltage(await Common.getVoltage(this.#bus)) }
 }

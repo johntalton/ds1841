@@ -1,17 +1,22 @@
 import { I2CAddressedBus } from '@johntalton/and-other-delights'
 
 import { Common } from './common.js'
+import { Converter } from './converter.js'
 
 export class DS1841 {
-  #abus: I2CAddressedBus
+  #bus: I2CAddressedBus
 
-  static from(abus: I2CAddressedBus) { return Promise.resolve(new DS1841(abus)) }
+  static from(bus: I2CAddressedBus) { return Promise.resolve(new DS1841(bus)) }
 
-	constructor(abus: I2CAddressedBus) {
-		this.#abus = abus
+	constructor(bus: I2CAddressedBus) {
+		this.#bus = bus
 	}
 
-  setProfile(profile) {
-    return Common.setProfile(this.#abus, profile)
-  }
+  getProfile() { return Common.getProfile(this.#bus) }
+
+  getCR2() { return Common.getCR2(this.#bus) }
+
+  getTemperature() { return Common.getTemperature(this.#bus) }
+
+  getVoltage() { return Converter.decodeVoltage(Common.getVoltage(this.#bus)) }
 }

@@ -1,7 +1,6 @@
 import { I2CAddressedBus } from '@johntalton/and-other-delights'
 import { BitSmush } from '@johntalton/bitsmush'
 
-
 const REGISTER = {
 	IVR: 0x00,
 	CR0: 0x02,
@@ -54,14 +53,16 @@ export class Common {
 	}
 
 	static async getControls(bus: I2CAddressedBus) {
-		const cr0 = await Common.getCR0(bus)
-		const cr1 = await Common.getCR1(bus)
-		const cr2 = await Common.getCR2(bus)
+		const [ cr0, cr1, cr2 ] = await Promise.all([
+			Common.getCR0(bus),
+			Common.getCR1(bus),
+			Common.getCR2(bus)
+		])
 
 		return {
-			...cr0,
-			...cr1,
-			...cr2
+			cr0,
+			cr1,
+			cr2
 		}
 	}
 
@@ -124,6 +125,7 @@ export class Common {
 	static async getProfile(bus: I2CAddressedBus) {
 
 		const controls = await Common.getControls(bus)
+
 		const ivr = await Common.getIVR(bus)
 		const lutAddr = await Common.getLUTIndex(bus)
 		const wiper = await Common.getWIPER(bus)
@@ -132,28 +134,12 @@ export class Common {
 		const lut = await Common.getLUT(bus)
 
 		return {
-			// IRV or Wiper value
+			...controls,
 			value: ivr,
-
-			// NV RAM / EEPROM update mode
-			mode: controls.mode,
-
-			// Wiper controls
-			updateMode: controls.updateMode,
-			addressMode: controls.addressMode,
-
-			// LUT addressing controls
-			lutIndexMode: controls.lutIndexMode,
-			lutIndex: lutAddr,
-
-			// wiper controls
-			wiperAccessControl: controls.wiperAccessControl,
+			lutAddr,
 			wiper,
-
-			// ADC updated sensor values
-			temperatureC: temp,
-			supplyVoltage: volt,
-
+			temp,
+			volt,
 			lut
 		}
 	}

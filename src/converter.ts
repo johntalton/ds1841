@@ -3,6 +3,32 @@ import { BitSmush } from '@johntalton/bitsmush'
 export type ConverterBufferSource = ArrayBuffer | SharedArrayBuffer | DataView
 
 export class Converter {
+	static decodeIRV(source: ConverterBufferSource) {
+		const buffer = ArrayBuffer.isView(source) ?
+			new DataView(source.buffer, source.byteOffset, source.byteLength) :
+			new DataView(source, 0, source.byteLength)
+
+		if (buffer.byteLength !== 1) { throw new Error('invalid length') }
+		const irv = buffer.getUint8(0)
+
+		return {
+			value: irv
+		}
+	}
+
+	static decodeWIPER(source: ConverterBufferSource) {
+		const buffer = ArrayBuffer.isView(source) ?
+			new DataView(source.buffer, source.byteOffset, source.byteLength) :
+			new DataView(source, 0, source.byteLength)
+
+		if (buffer.byteLength !== 1) { throw new Error('invalid length') }
+		const wr = buffer.getUint8(0)
+
+		return {
+			wiper: wr
+		}
+	}
+
 	static decodeCR0(source: ConverterBufferSource) {
 		const buffer = ArrayBuffer.isView(source) ?
 			new DataView(source.buffer, source.byteOffset, source.byteLength) :
@@ -57,6 +83,7 @@ export class Converter {
 			new DataView(source.buffer, source.byteOffset, source.byteLength) :
 			new DataView(source, 0, source.byteLength)
 
+		if (buffer.byteLength !== 1) { throw new Error('invalid length') }
 		const result = buffer.getUint8(0)
 
 		// result is greater than or equal to 128, subtract 256 from the result
@@ -72,10 +99,41 @@ export class Converter {
 			new DataView(source.buffer, source.byteOffset, source.byteLength) :
 			new DataView(source, 0, source.byteLength)
 
+		if (buffer.byteLength !== 1) { throw new Error('invalid length') }
 		const mV = buffer.getUint8(0)
 
 		return {
 			mV
 		}
+	}
+
+	//
+
+	static decodeLUTIndex(source: ConverterBufferSource) {
+		const buffer = ArrayBuffer.isView(source) ?
+			new DataView(source.buffer, source.byteOffset, source.byteLength) :
+			new DataView(source, 0, source.byteLength)
+
+		if (buffer.byteLength !== 1) { throw new Error('invalid length') }
+		const lutIndex = buffer.getUint8(0)
+
+		return {
+			lutIndex
+		}
+	}
+
+	static decodeLUT(source: ConverterBufferSource) {
+
+	}
+
+	static decudeLUTValue(source: ConverterBufferSource) {
+		const buffer = ArrayBuffer.isView(source) ?
+			new DataView(source.buffer, source.byteOffset, source.byteLength) :
+			new DataView(source, 0, source.byteLength)
+
+		if (buffer.byteLength !== 1) { throw new Error('invalid length') }
+
+		return buffer.getUint8(0)
+
 	}
 }

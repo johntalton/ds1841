@@ -2,9 +2,10 @@ import { I2CAddressedBus } from '@johntalton/and-other-delights'
 
 import { Common } from './common.js'
 import { Converter } from './converter.js'
+import { Controls, ControlRegisters } from './defs.js'
 
 
-function _decodeControls(controls) {
+function _decodeControls(controls: ControlRegisters): Controls {
   const cr0 = Converter.decodeCR0(controls.cr0)
   const cr1 = Converter.decodeCR1(controls.cr1)
   const cr2 = Converter.decodeCR2(controls.cr2)
@@ -42,7 +43,7 @@ export class DS1841 {
 
   async getProfile() {
     const profile = await Common.getProfile(this.#bus)
-s
+
     return {
       ..._decodeControls(profile),
 
@@ -80,5 +81,5 @@ s
 
   async getLUT() { return Converter.decodeLUT(await Common.getLUT(this.#bus)) }
 
-  async getLUTByIndex(index: number) { return Converter.decudeLUTValue(await Common.getLUTByIndex(this.#bus, index)) }
+  async getLUTByIndex(index: number) { return Converter.decodeLUTValue(await Common.getLUTByIndex(this.#bus, index)) }
 }

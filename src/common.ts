@@ -1,39 +1,6 @@
 import { I2CAddressedBus } from '@johntalton/and-other-delights'
-import { BitSmush } from '@johntalton/bitsmush'
 
-const REGISTER = {
-	IVR: 0x00,
-	CR0: 0x02,
-	CR1: 0x03,
-	LUTAR: 0x08,
-	WR: 0x09,
-	CR2: 0x0A,
-	TEMP: 0x0C,
-	VOLTAGE: 0x0E,
-	LUT_START: 0x80
-}
-
-const REGISTER_LUT_MIN_TEMP = REGISTER.LUT_START
-const REGISTER_LUT_MAX_TEMP = 0xC7
-const LUT_SIZE = 72
-
-export const MODE_SET_AND_UPDATE = 0 //default
-export const MODE_UPDATE_ONLY = 1
-
-// addressMode
-export const SUMMED = 1 // default
-export const DIRECT = 0
-
-// lut mode
-export const FROM_ADC_TEMPERATURE = 0 // default
-export const FROM_DIRECT_VALUE = 1
-
-// update mode
-export const ADC_ON = 1 // default
-export const ADC_OFF = 0
-
-export const ADC_CONTROL = 0 // default
-export const MANUAL = 1
+import { REGISTER, LUT_SIZE } from './defs.js'
 
 export class Common {
 	static async getIVR(bus: I2CAddressedBus) {
@@ -66,33 +33,33 @@ export class Common {
 		}
 	}
 
-	static async setControls(bus: I2CAddressedBus, controls) {
+	// static async setControls(bus: I2CAddressedBus, controls) {
 
-	}
+	// }
 
 	static async getCR0(bus: I2CAddressedBus) {
 		return bus.readI2cBlock(REGISTER.CR0, 1)
 	}
 
-	static async setCR0(bus: I2CAddressedBus, mode) {
+	// static async setCR0(bus: I2CAddressedBus, mode) {
 
-	}
+	// }
 
 	static async getCR1(bus: I2CAddressedBus) {
 		return bus.readI2cBlock(REGISTER.CR1, 1)
 	}
 
-	static async setCR1(bus: I2CAddressedBus, updateMode, addressMode) {
+	// static async setCR1(bus: I2CAddressedBus, updateMode, addressMode) {
 
-	}
+	// }
 
 	static async getCR2(bus: I2CAddressedBus) {
 		return bus.readI2cBlock(REGISTER.CR1, 1)
 	}
 
-	static async setCR2(bus: I2CAddressedBus, wiperAccessControl, lutIndexMode) {
+	// static async setCR2(bus: I2CAddressedBus, wiperAccessControl, lutIndexMode) {
 
-	}
+	// }
 
 	static async getTemperature(bus: I2CAddressedBus) {
 		return bus.readI2cBlock(REGISTER.TEMP, 1)
@@ -106,9 +73,9 @@ export class Common {
 		return bus.readI2cBlock(REGISTER.LUTAR, 1)
 	}
 
-	static async setLUTAIndex(bus: I2CAddressedBus, index: number) {
+	// static async setLUTAIndex(bus: I2CAddressedBus, index: number) {
 
-	}
+	// }
 
 	static async getLUT(bus: I2CAddressedBus) {
 		return bus.readI2cBlock(REGISTER.LUT_START, LUT_SIZE)
@@ -118,20 +85,22 @@ export class Common {
 		return bus.readI2cBlock(REGISTER.LUT_START + index, 1)
 	}
 
-	static async setLUTByIndex(bus: I2CAddressedBus, index: number, value: number) {
+	// static async setLUTByIndex(bus: I2CAddressedBus, index: number, value: number) {
 
-	}
+	// }
 
 	static async getProfile(bus: I2CAddressedBus) {
 
 		const controls = await Common.getControls(bus)
 
-		const ivr = await Common.getIVR(bus)
-		const lutAddr = await Common.getLUTIndex(bus)
-		const wiper = await Common.getWIPER(bus)
-		const temp = await Common.getTemperature(bus)
-		const volt = await Common.getVoltage(bus)
-		const lut = await Common.getLUT(bus)
+		const [ ivr, lutAddr, wiper, temp, volt, lut ] = await Promise.all([
+			Common.getIVR(bus),
+			Common.getLUTIndex(bus),
+			Common.getWIPER(bus),
+			Common.getTemperature(bus),
+			Common.getVoltage(bus),
+			Common.getLUT(bus)
+		])
 
 		return {
 			...controls,

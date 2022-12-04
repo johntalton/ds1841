@@ -123,10 +123,19 @@ export class Converter {
 	}
 
 	static decodeLUT(source: ConverterBufferSource) {
+		const buffer = ArrayBuffer.isView(source) ?
+			new DataView(source.buffer, source.byteOffset, source.byteLength) :
+			new DataView(source, 0, source.byteLength)
 
+		const uint = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength)
+
+		return uint.reduce((acc: { [key: number]: number }, value, index) => {
+			acc[index] = value
+			return acc
+		}, { })
 	}
 
-	static decudeLUTValue(source: ConverterBufferSource) {
+	static decodeLUTValue(source: ConverterBufferSource) {
 		const buffer = ArrayBuffer.isView(source) ?
 			new DataView(source.buffer, source.byteOffset, source.byteLength) :
 			new DataView(source, 0, source.byteLength)
@@ -134,6 +143,5 @@ export class Converter {
 		if (buffer.byteLength !== 1) { throw new Error('invalid length') }
 
 		return buffer.getUint8(0)
-
 	}
 }

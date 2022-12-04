@@ -118,7 +118,7 @@ export class Converter {
 		const uint = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength)
 
 		return uint.reduce((acc: { [key: number]: number }, value, index) => {
-			acc[index + 10] = value
+			acc[index] = value
 			return acc
 		}, { })
 	}

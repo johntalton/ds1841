@@ -52,7 +52,7 @@ export class Common {
 	}
 
 	static async getCR2(bus: I2CAddressedBus) {
-		return bus.readI2cBlock(REGISTER.CR1, 1)
+		return bus.readI2cBlock(REGISTER.CR2, 1)
 	}
 
 	static async setCR2(bus: I2CAddressedBus, source: ConverterBufferSource) {

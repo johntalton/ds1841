@@ -2,8 +2,10 @@ import { I2CAddressedBus } from '@johntalton/and-other-delights'
 
 import { Common } from './common.js'
 import { Converter } from './converter.js'
-import { Controls, ControlRegisters } from './defs.js'
-
+import {
+  Controls, ControlRegisters,
+  ControlRegister0, ControlRegister1, ControlRegister2
+} from './defs.js'
 
 function _decodeControls(controls: ControlRegisters): Controls {
   const cr0 = Converter.decodeCR0(controls.cr0)
@@ -16,7 +18,7 @@ function _decodeControls(controls: ControlRegisters): Controls {
 
     // Wiper controls
     updateMode: cr1.updateMode,
-    addressMode: cr1.addressMode,
+    additionMode: cr1.additionMode,
 
     // LUT addressing controls
     lutIndexMode: cr2.lutIndexMode,
@@ -67,9 +69,15 @@ export class DS1841 {
 
   async getCR0() { return Converter.decodeCR0(await Common.getCR0(this.#bus)) }
 
+  async setCR0(value: ControlRegister0) { return Common.setCR0(this.#bus, Converter.encodeCR0(value)) }
+
   async getCR1() { return Converter.decodeCR1(await Common.getCR1(this.#bus)) }
 
+  async setCR1(value: ControlRegister1) { return Common.setCR1(this.#bus, Converter.encodeCR1(value)) }
+
   async getCR2() { return Converter.decodeCR2(await Common.getCR2(this.#bus)) }
+
+  async setCR2(value: ControlRegister2) { return Common.setCR2(this.#bus, Converter.encodeCR2(value)) }
 
   async getTemperature() { return Converter.decodeTemperature(await Common.getTemperature(this.#bus)) }
 

@@ -12,23 +12,33 @@ export const REGISTER = {
 
 export const LUT_SIZE = 72
 
-export const MODE_SET_AND_UPDATE = 0 //default
-export const MODE_UPDATE_ONLY = 1
+export const MODE ={
+	SET_AND_UPDATE: 0 ,//default
+	UPDATE_ONLY: 1
+}
 
 // addressMode
-export const SUMMED = 1 // default
-export const DIRECT = 0
+export const ADDITION_MODE = {
+	SUMMED: 1, // default
+	DIRECT: 0
+}
 
 // lut mode
-export const FROM_ADC_TEMPERATURE = 0 // default
-export const FROM_DIRECT_VALUE = 1
+export const LUT_MODE = {
+	FROM_ADC_TEMPERATURE: 0, // default
+	FROM_DIRECT_VALUE: 1
+}
 
 // update mode
-export const ADC_ON = 1 // default
-export const ADC_OFF = 0
+export const ADC = {
+	ON: 1, // default
+	OFF: 0
+}
 
-export const ADC_CONTROL = 0 // default
-export const MANUAL = 1
+export const ACCESS_CONTROL = {
+	ADC_CONTROL: 0, // default
+	MANUAL: 1
+}
 
 
 export const VOLTAGE_LSB_MA = 25.6
@@ -43,13 +53,19 @@ export type ControlRegisters = {
   cr2: ConverterBufferSource
 }
 
-export type Controls = {
-  mode: number,
 
-  updateMode: number,
-  addressMode: number,
-
-  lutIndexMode: number,
-
-  wiperAccessControl: number
+export type ControlRegister0 = {
+	mode: number
 }
+
+export type ControlRegister1 = {
+	updateMode: number,
+	additionMode: number
+}
+
+export type ControlRegister2 = {
+	wiperAccessControl: number,
+	lutIndexMode: number
+}
+
+export type Controls = ControlRegister0 & ControlRegister1 & ControlRegister2

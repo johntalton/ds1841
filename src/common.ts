@@ -1,6 +1,6 @@
 import { I2CAddressedBus } from '@johntalton/and-other-delights'
 
-import { REGISTER, LUT_SIZE } from './defs.js'
+import { REGISTER, LUT_SIZE, ConverterBufferSource } from './defs.js'
 
 export class Common {
 	static async getIVR(bus: I2CAddressedBus) {
@@ -20,11 +20,9 @@ export class Common {
 	}
 
 	static async getControls(bus: I2CAddressedBus) {
-		const [ cr0, cr1, cr2 ] = await Promise.all([
-			Common.getCR0(bus),
-			Common.getCR1(bus),
-			Common.getCR2(bus)
-		])
+		const cr0 = await Common.getCR0(bus)
+		const cr1 = await Common.getCR1(bus)
+		const cr2 = await Common.getCR2(bus)
 
 		return {
 			cr0,
@@ -41,25 +39,25 @@ export class Common {
 		return bus.readI2cBlock(REGISTER.CR0, 1)
 	}
 
-	// static async setCR0(bus: I2CAddressedBus, mode) {
-
-	// }
+	static async setCR0(bus: I2CAddressedBus, source: ConverterBufferSource) {
+		return bus.writeI2cBlock(REGISTER.CR0, source)
+	}
 
 	static async getCR1(bus: I2CAddressedBus) {
 		return bus.readI2cBlock(REGISTER.CR1, 1)
 	}
 
-	// static async setCR1(bus: I2CAddressedBus, updateMode, addressMode) {
-
-	// }
+	static async setCR1(bus: I2CAddressedBus, source: ConverterBufferSource) {
+		return bus.writeI2cBlock(REGISTER.CR1, source)
+	}
 
 	static async getCR2(bus: I2CAddressedBus) {
 		return bus.readI2cBlock(REGISTER.CR1, 1)
 	}
 
-	// static async setCR2(bus: I2CAddressedBus, wiperAccessControl, lutIndexMode) {
-
-	// }
+	static async setCR2(bus: I2CAddressedBus, source: ConverterBufferSource) {
+		return bus.writeI2cBlock(REGISTER.CR2, source)
+	}
 
 	static async getTemperature(bus: I2CAddressedBus) {
 		return bus.readI2cBlock(REGISTER.TEMP, 1)

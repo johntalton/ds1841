@@ -1,7 +1,12 @@
 import { BitSmush } from '@johntalton/bitsmush'
 import { ConverterBufferSource } from './defs.js'
 
-import { REGISTER, VOLTAGE_LSB_MA } from './defs.js'
+import {
+	REGISTER, VOLTAGE_LSB_MA,
+	ControlRegister0, ControlRegister1, ControlRegister2
+} from './defs.js'
+
+const ONE_BIT_MASK = 0b1
 
 export class Converter {
 	static decodeIRV(source: ConverterBufferSource) {
@@ -22,7 +27,7 @@ export class Converter {
 		return buffer.getUint8(0)
 	}
 
-	static decodeCR0(source: ConverterBufferSource) {
+	static decodeCR0(source: ConverterBufferSource): ControlRegister0 {
 		const buffer = ArrayBuffer.isView(source) ?
 			new DataView(source.buffer, source.byteOffset, source.byteLength) :
 			new DataView(source, 0, source.byteLength)
@@ -37,7 +42,7 @@ export class Converter {
 		}
 	}
 
-	static decodeCR1(source: ConverterBufferSource) {
+	static decodeCR1(source: ConverterBufferSource): ControlRegister1 {
 		const buffer = ArrayBuffer.isView(source) ?
 			new DataView(source.buffer, source.byteOffset, source.byteLength) :
 			new DataView(source, 0, source.byteLength)
@@ -46,15 +51,15 @@ export class Converter {
 		const cr1 = buffer.getUint8(0)
 
 		const updateMode = BitSmush.extractBits(cr1, 0, 1)
-		const addressMode = BitSmush.extractBits(cr1, 1, 1)
+		const additionMode = BitSmush.extractBits(cr1, 1, 1)
 
 		return {
 			updateMode,
-			addressMode
+			additionMode
 		}
 	}
 
-	static decodeCR2(source: ConverterBufferSource) {
+	static decodeCR2(source: ConverterBufferSource): ControlRegister2 {
 		const buffer = ArrayBuffer.isView(source) ?
 			new DataView(source.buffer, source.byteOffset, source.byteLength) :
 			new DataView(source, 0, source.byteLength)
@@ -62,7 +67,7 @@ export class Converter {
 		if (buffer.byteLength !== 1) { throw new Error('invalid length') }
 		const cr2 = buffer.getUint8(0)
 
-		const wiperAccessControl = BitSmush.extractBits(cr2, 0, 1)
+		const wiperAccessControl = BitSmush.extractBits(cr2, 2, 1)
 		const lutIndexMode = BitSmush.extractBits(cr2, 1, 1)
 
 		return {
@@ -131,5 +136,35 @@ export class Converter {
 		if (buffer.byteLength !== 1) { throw new Error('invalid length') }
 
 		return buffer.getUint8(0)
+	}
+
+
+
+	//
+
+
+	static encodeCR0(value: ControlRegister0) {
+		const { mode } = value
+
+		const cr0 = (mode & ONE_BIT_MASK) << 7
+		const buffer = Uint8Array.from([ cr0 ])
+		return buffer.buffer
+	}
+
+	static encodeCR1(value: ControlRegister1) {
+		const { updateMode, additionMode } = value
+		const cr1 = (updateMode & ONE_BIT_MASK) | ((additionMode & ONE_BIT_MASK) << 1)
+
+		const buffer = Uint8Array.from([ cr1 ])
+		return buffer.buffer
+	}
+
+	static encodeCR2(value: ControlRegister2) {
+		const { wiperAccessControl, lutIndexMode } = value
+
+		const cr2 = ((wiperAccessControl & ONE_BIT_MASK) << 2) | ((lutIndexMode & ONE_BIT_MASK) << 1)
+
+		const buffer = Uint8Array.from([ cr2 ])
+		return buffer.buffer
 	}
 }

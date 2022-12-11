@@ -65,7 +65,10 @@ export class DS1841 {
 
   async getIVR() { return Converter.decodeIRV(await Common.getIVR(this.#bus)) }
 
-  async getWIPER() { return Converter.decodeWIPER(await Common.getIVR(this.#bus)) }
+  async setIVR(value: number) { return Common.setIVR(this.#bus, Converter.encodeIVR(value)) }
+
+  async getWIPER() { return Converter.decodeWIPER(await Common.getWIPER(this.#bus)) }
+
 
   async getCR0() { return Converter.decodeCR0(await Common.getCR0(this.#bus)) }
 
@@ -90,4 +93,6 @@ export class DS1841 {
   async getLUT() { return Converter.decodeLUT(await Common.getLUT(this.#bus)) }
 
   async getLUTByIndex(index: number) { return Converter.decodeLUTValue(await Common.getLUTByIndex(this.#bus, index)) }
+
+  async setLUTByIndex(index: number, value: number) { return Common.setLUTByIndex(this.#bus, index, Converter.encodeLUTByIndex(value))}
 }

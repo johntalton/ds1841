@@ -167,4 +167,14 @@ export class Converter {
 		const buffer = Uint8Array.from([ cr2 ])
 		return buffer.buffer
 	}
+
+	static encodeLUTByIndex(value: number) {
+		const buffer = Uint8Array.from([ value ])
+		return buffer.buffer
+	}
+
+	static encodeIVR(value: number) {
+		const buffer = Uint8Array.from([ value ])
+		return buffer.buffer
+	}
 }

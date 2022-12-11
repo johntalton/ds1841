@@ -7,8 +7,8 @@ export class Common {
 		return bus.readI2cBlock(REGISTER.IVR, 1)
 	}
 
-	static async setIVR(bus: I2CAddressedBus, ivr: number) {
-		return bus.writeI2cBlock(REGISTER.IVR, Uint8Array.from([ ivr ]))
+	static async setIVR(bus: I2CAddressedBus, source: ConverterBufferSource) {
+		return bus.writeI2cBlock(REGISTER.IVR, source)
 	}
 
 	static async getWIPER(bus: I2CAddressedBus) {
@@ -88,9 +88,9 @@ export class Common {
 		return bus.readI2cBlock(REGISTER.LUT_START + index, 1)
 	}
 
-	// static async setLUTByIndex(bus: I2CAddressedBus, index: number, value: number) {
-
-	// }
+	static async setLUTByIndex(bus: I2CAddressedBus, index: number, source: ConverterBufferSource) {
+		return bus.writeI2cBlock(REGISTER.LUT_START + index, source)
+	}
 
 	static async getProfile(bus: I2CAddressedBus) {
 

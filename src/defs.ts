@@ -12,8 +12,8 @@ export const REGISTER = {
 
 export const LUT_SIZE = 72
 
-export const MODE ={
-	SET_AND_UPDATE: 0 ,//default
+export const MODE = {
+	SET_AND_UPDATE: 0, //default
 	UPDATE_ONLY: 1
 }
 

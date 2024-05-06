@@ -3,7 +3,6 @@
     "alwaysStrict": true,
 
     "incremental": true,
-    "watch": false,
 
     "target": "ESNext",
     "module": "ESNext",
@@ -15,7 +14,7 @@
 
     "skipLibCheck": true,
 
-    "noEmitOnError": true,
+    "noEmitOnError": false,
     "noUnusedParameters": true,
 
     "strict": true,

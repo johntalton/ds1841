@@ -1,180 +1,163 @@
 import { BitSmush } from '@johntalton/bitsmush'
-import { ConverterBufferSource } from './defs.js'
 
 import {
-	REGISTER, VOLTAGE_LSB_MA,
-	ControlRegister0, ControlRegister1, ControlRegister2
+	BufferSource,
+	Control0,
+	Control1,
+	Control2,
+	LUT_ADDRESS_INDEX_OFFSET
+} from './defs.js'
+import {
+  VOLTAGE_LSB_MA
 } from './defs.js'
 
-const ONE_BIT_MASK = 0b1
+export const BIT_SET = 1
+export const BIT_UNSET = 0
+
+export const OFFSET = {
+	CR0: {
+		SEE: 7
+	},
+	CR1: {
+		UPDATE: 0,
+		ADD: 1
+	},
+	CR2: {
+		ACCESS: 2,
+		MODE: 1
+	}
+}
+
+export const BIT_LENGTH_ONE = 1
+
 
 export class Converter {
-	static decodeIRV(source: ConverterBufferSource) {
-		const buffer = ArrayBuffer.isView(source) ?
-			new DataView(source.buffer, source.byteOffset, source.byteLength) :
-			new DataView(source, 0, source.byteLength)
-
-		if (buffer.byteLength !== 1) { throw new Error('invalid length') }
-		return buffer.getUint8(0)
+	static decodeByte(source: BufferSource) {
+		const u8 = ArrayBuffer.isView(source) ?
+			new Uint8Array(source.buffer, source.byteOffset, source.byteLength) :
+			new Uint8Array(source)
+		// console.log('decodeByte', u8[0])
+		return u8[0]
 	}
 
-	static decodeWIPER(source: ConverterBufferSource) {
-		const buffer = ArrayBuffer.isView(source) ?
-			new DataView(source.buffer, source.byteOffset, source.byteLength) :
-			new DataView(source, 0, source.byteLength)
-
-		if (buffer.byteLength !== 1) { throw new Error('invalid length') }
-		return buffer.getUint8(0)
-	}
-
-	static decodeCR0(source: ConverterBufferSource): ControlRegister0 {
-		const buffer = ArrayBuffer.isView(source) ?
-			new DataView(source.buffer, source.byteOffset, source.byteLength) :
-			new DataView(source, 0, source.byteLength)
-
-		if (buffer.byteLength !== 1) { throw new Error('invalid length') }
-		const cr0 = buffer.getUint8(0)
-
-		const mode = BitSmush.extractBits(cr0, 7, 1)
-
-		return {
-			mode
-		}
-	}
-
-	static decodeCR1(source: ConverterBufferSource): ControlRegister1 {
-		const buffer = ArrayBuffer.isView(source) ?
-			new DataView(source.buffer, source.byteOffset, source.byteLength) :
-			new DataView(source, 0, source.byteLength)
-
-		if (buffer.byteLength !== 1) { throw new Error('invalid length') }
-		const cr1 = buffer.getUint8(0)
-
-		const updateMode = BitSmush.extractBits(cr1, 0, 1)
-		const additionMode = BitSmush.extractBits(cr1, 1, 1)
-
-		return {
-			updateMode,
-			additionMode
-		}
-	}
-
-	static decodeCR2(source: ConverterBufferSource): ControlRegister2 {
-		const buffer = ArrayBuffer.isView(source) ?
-			new DataView(source.buffer, source.byteOffset, source.byteLength) :
-			new DataView(source, 0, source.byteLength)
-
-		if (buffer.byteLength !== 1) { throw new Error('invalid length') }
-		const cr2 = buffer.getUint8(0)
-
-		const wiperAccessControl = BitSmush.extractBits(cr2, 2, 1)
-		const lutIndexMode = BitSmush.extractBits(cr2, 1, 1)
-
-		return {
-			wiperAccessControl,
-			lutIndexMode
-		}
-	}
-
-	static decodeTemperature(source: ConverterBufferSource): number {
-		const buffer = ArrayBuffer.isView(source) ?
-			new DataView(source.buffer, source.byteOffset, source.byteLength) :
-			new DataView(source, 0, source.byteLength)
-
-		if (buffer.byteLength !== 1) { throw new Error('invalid length') }
-		const result = buffer.getUint8(0)
+	static decodeUnsigned(source: BufferSource) {
+		const result = Converter.decodeByte(source)
 
 		// result is greater than or equal to 128, subtract 256 from the result
-		return result >= 128 ? result - 256 : result
+		return (result >= 128) ? result - 256 : result
 	}
 
-	static decodeVoltage(source: ConverterBufferSource): number {
-		const buffer = ArrayBuffer.isView(source) ?
-			new DataView(source.buffer, source.byteOffset, source.byteLength) :
-			new DataView(source, 0, source.byteLength)
+	static decodeCR0(source: BufferSource): Control0 {
+		const cr0 = Converter.decodeByte(source)
+		const see = BitSmush.extractBits(cr0, OFFSET.CR0.SEE, BIT_LENGTH_ONE)
 
-		if (buffer.byteLength !== 1) { throw new Error('invalid length') }
+		return {
+			enableShadowEE: see === BIT_SET
+		}
+	}
 
-		return buffer.getUint8(0) * VOLTAGE_LSB_MA
+	static decodeCR1(source: BufferSource): Control1 {
+		const cr1 = Converter.decodeByte(source)
+		const updateMode = BitSmush.extractBits(cr1, OFFSET.CR1.UPDATE, BIT_LENGTH_ONE)
+		const additionMode = BitSmush.extractBits(cr1, OFFSET.CR1.ADD, BIT_LENGTH_ONE)
+
+		return {
+			enableADC: updateMode === BIT_SET,
+			enableSummation: additionMode === BIT_SET
+		}
+	}
+
+	static decodeCR2(source: BufferSource): Control2 {
+		const cr2 = Converter.decodeByte(source)
+
+		const wiperAccessControl = BitSmush.extractBits(cr2, OFFSET.CR2.ACCESS, BIT_LENGTH_ONE)
+		const modeLUTAR = BitSmush.extractBits(cr2, OFFSET.CR2.MODE, BIT_LENGTH_ONE)
+
+		return {
+			enableLUTAddressUpdate: modeLUTAR !== BIT_SET,
+			enableLUTValueUpdate: wiperAccessControl !== BIT_SET
+		}
+	}
+
+	static decodeTemperature(source: BufferSource): number {
+		return Converter.decodeUnsigned(source)
+	}
+
+	static decodeVoltage(source: BufferSource): number {
+		return Converter.decodeByte(source) * VOLTAGE_LSB_MA
+	}
+
+	static decodeIRV(source: BufferSource) {
+		return Converter.decodeByte(source)
+	}
+
+	static decodeLUTValue(source: BufferSource): number {
+		return Converter.decodeByte(source)
+	}
+
+	static decodeLUTIndex(source: BufferSource): number {
+		return Converter.decodeByte(source) - LUT_ADDRESS_INDEX_OFFSET
+	}
+
+	static decodeLUT(source: BufferSource): Array<number> {
+		const u8 = ArrayBuffer.isView(source) ?
+			new Uint8Array(source.buffer, source.byteOffset, source.byteLength) :
+			new Uint8Array(source)
+
+		return [ ...u8 ].map(u => Converter.decodeUnsigned(Uint8Array.from([ u ])))
 	}
 
 	//
-
-	static decodeLUTIndex(source: ConverterBufferSource): number {
-		const lutAddress = Converter.decodeLUTAddress(source)
-
-		return lutAddress - REGISTER.LUT_START
-	}
-
-	static decodeLUTAddress(source: ConverterBufferSource): number {
-		const buffer = ArrayBuffer.isView(source) ?
-			new DataView(source.buffer, source.byteOffset, source.byteLength) :
-			new DataView(source, 0, source.byteLength)
-
-		if (buffer.byteLength !== 1) { throw new Error('invalid length') }
-		return buffer.getUint8(0)
-	}
-
-	static decodeLUT(source: ConverterBufferSource): { [key: number]: number } {
-		const buffer = ArrayBuffer.isView(source) ?
-			new DataView(source.buffer, source.byteOffset, source.byteLength) :
-			new DataView(source, 0, source.byteLength)
-
-		const uint = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength)
-
-		return uint.reduce((acc: { [key: number]: number }, value, index) => {
-			acc[index] = value
-			return acc
-		}, { })
-	}
-
-	static decodeLUTValue(source: ConverterBufferSource): number {
-		const buffer = ArrayBuffer.isView(source) ?
-			new DataView(source.buffer, source.byteOffset, source.byteLength) :
-			new DataView(source, 0, source.byteLength)
-
-		if (buffer.byteLength !== 1) { throw new Error('invalid length') }
-
-		return buffer.getUint8(0)
-	}
-
-
-
+	// ---------------------------------------------------------------------------
 	//
-
-
-	static encodeCR0(value: ControlRegister0) {
-		const { mode } = value
-
-		const cr0 = (mode & ONE_BIT_MASK) << 7
-		const buffer = Uint8Array.from([ cr0 ])
-		return buffer.buffer
+	static encodeByte(value: number): ArrayBuffer {
+		// console.log('encodeByte', value)
+		return Uint8Array.from([ value ]).buffer
 	}
 
-	static encodeCR1(value: ControlRegister1) {
-		const { updateMode, additionMode } = value
-		const cr1 = (updateMode & ONE_BIT_MASK) | ((additionMode & ONE_BIT_MASK) << 1)
-
-		const buffer = Uint8Array.from([ cr1 ])
-		return buffer.buffer
+	static encodeCR0({
+		enableShadowEE = false
+	}: Control0) {
+		const see = enableShadowEE ? BIT_SET : BIT_UNSET
+		const cr0 = (see << OFFSET.CR0.SEE)
+		return Converter.encodeByte(cr0)
 	}
 
-	static encodeCR2(value: ControlRegister2) {
-		const { wiperAccessControl, lutIndexMode } = value
+	static encodeCR1({
+		enableADC = true,
+		enableSummation = true
+	}: Control1) {
+		const addrMode = enableSummation ? BIT_SET : BIT_UNSET
+		const updateMode = enableADC ? BIT_SET : BIT_UNSET
+		const cr1 = (addrMode << OFFSET.CR1.ADD) | (updateMode << OFFSET.CR1.UPDATE)
 
-		const cr2 = ((wiperAccessControl & ONE_BIT_MASK) << 2) | ((lutIndexMode & ONE_BIT_MASK) << 1)
-
-		const buffer = Uint8Array.from([ cr2 ])
-		return buffer.buffer
+		return Converter.encodeByte(cr1)
 	}
 
-	static encodeLUTByIndex(value: number) {
-		const buffer = Uint8Array.from([ value ])
-		return buffer.buffer
+	static encodeCR2({
+		enableLUTValueUpdate = true,
+		enableLUTAddressUpdate = true
+	}: Control2) {
+		const wiperAccessControl = !enableLUTValueUpdate ? BIT_SET : BIT_UNSET
+		const modeLUTAR = !enableLUTAddressUpdate ? BIT_SET : BIT_UNSET
+		const cr2 = (wiperAccessControl << OFFSET.CR2.ACCESS) | (modeLUTAR << OFFSET.CR2.MODE)
+
+		return Converter.encodeByte(cr2)
 	}
 
 	static encodeIVR(value: number) {
-		const buffer = Uint8Array.from([ value ])
-		return buffer.buffer
+		return Converter.encodeByte(value)
+	}
+
+	static encodeLUTValue(value: number) {
+		return Converter.encodeByte(value)
+	}
+
+	static encodeLUTIndex(value: number) {
+		return Converter.encodeByte(LUT_ADDRESS_INDEX_OFFSET + value)
+	}
+
+	static encodeLUT(...values: Array<number>) {
+		return Uint8Array.from(values)
 	}
 }

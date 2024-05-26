@@ -1,118 +1,73 @@
 import { I2CAddressedBus } from '@johntalton/and-other-delights'
 
-import { REGISTER, LUT_SIZE, ConverterBufferSource } from './defs.js'
+import { BufferSource, LUT_BYTE_PER_ENTRY } from './defs.js'
+import { REGISTER } from './defs.js'
+
+export const BYTE_LENGTH_ONE = 1
 
 export class Common {
 	static async getIVR(bus: I2CAddressedBus) {
-		return bus.readI2cBlock(REGISTER.IVR, 1)
+		return bus.readI2cBlock(REGISTER.IVR, BYTE_LENGTH_ONE)
 	}
 
-	static async setIVR(bus: I2CAddressedBus, source: ConverterBufferSource) {
+	static async setIVR(bus: I2CAddressedBus, source: BufferSource) {
 		return bus.writeI2cBlock(REGISTER.IVR, source)
 	}
 
-	static async getWIPER(bus: I2CAddressedBus) {
-		return bus.readI2cBlock(REGISTER.WR, 1)
-	}
-
-	static async setWIPER(bus: I2CAddressedBus, wiper: number) {
-		return bus.writeI2cBlock(REGISTER.WR, Uint8Array.from([ wiper ]))
-	}
-
-	static async getControls(bus: I2CAddressedBus) {
-		const cr0 = await Common.getCR0(bus)
-		const cr1 = await Common.getCR1(bus)
-		const cr2 = await Common.getCR2(bus)
-
-		return {
-			cr0,
-			cr1,
-			cr2
-		}
-	}
-
-	// static async setControls(bus: I2CAddressedBus, controls) {
-
-	// }
-
 	static async getCR0(bus: I2CAddressedBus) {
-		return bus.readI2cBlock(REGISTER.CR0, 1)
+		return bus.readI2cBlock(REGISTER.CR0, BYTE_LENGTH_ONE)
 	}
 
-	static async setCR0(bus: I2CAddressedBus, source: ConverterBufferSource) {
+	static async setCR0(bus: I2CAddressedBus, source: BufferSource) {
 		return bus.writeI2cBlock(REGISTER.CR0, source)
 	}
 
 	static async getCR1(bus: I2CAddressedBus) {
-		return bus.readI2cBlock(REGISTER.CR1, 1)
+		return bus.readI2cBlock(REGISTER.CR1, BYTE_LENGTH_ONE)
 	}
 
-	static async setCR1(bus: I2CAddressedBus, source: ConverterBufferSource) {
+	static async setCR1(bus: I2CAddressedBus, source: BufferSource) {
 		return bus.writeI2cBlock(REGISTER.CR1, source)
 	}
 
 	static async getCR2(bus: I2CAddressedBus) {
-		return bus.readI2cBlock(REGISTER.CR2, 1)
+		return bus.readI2cBlock(REGISTER.CR2, BYTE_LENGTH_ONE)
 	}
 
-	static async setCR2(bus: I2CAddressedBus, source: ConverterBufferSource) {
+	static async setCR2(bus: I2CAddressedBus, source: BufferSource) {
 		return bus.writeI2cBlock(REGISTER.CR2, source)
 	}
 
 	static async getTemperature(bus: I2CAddressedBus) {
-		return bus.readI2cBlock(REGISTER.TEMP, 1)
+		return bus.readI2cBlock(REGISTER.TEMP, BYTE_LENGTH_ONE)
 	}
 
 	static async getVoltage(bus: I2CAddressedBus) {
-		return bus.readI2cBlock(REGISTER.VOLTAGE, 1)
+		return bus.readI2cBlock(REGISTER.VOLTAGE, BYTE_LENGTH_ONE)
 	}
 
 	static async getLUTIndex(bus: I2CAddressedBus) {
-		return bus.readI2cBlock(REGISTER.LUTAR, 1)
+		return bus.readI2cBlock(REGISTER.LUTAR, BYTE_LENGTH_ONE)
 	}
 
-	// static async setLUTAIndex(bus: I2CAddressedBus, index: number) {
-
-	// }
-
-	static async getLUT(bus: I2CAddressedBus) {
-		const first = await bus.readI2cBlock(REGISTER.LUT_START, 32)
-		// const second = await bus.readI2cBlock(REGISTER.LUT_START + 32, 32)
-
-		return first
-
-		return bus.readI2cBlock(REGISTER.LUT_START, LUT_SIZE)
+	static async setLUTIndex(bus: I2CAddressedBus, buffer: BufferSource) {
+		return bus.writeI2cBlock(REGISTER.LUTAR, buffer)
 	}
 
-	static async getLUTByIndex(bus: I2CAddressedBus, index: number) {
-		return bus.readI2cBlock(REGISTER.LUT_START + index, 1)
+	static async getLUTValue(bus: I2CAddressedBus) {
+		return bus.readI2cBlock(REGISTER.LUTVAL, BYTE_LENGTH_ONE)
 	}
 
-	static async setLUTByIndex(bus: I2CAddressedBus, index: number, source: ConverterBufferSource) {
-		return bus.writeI2cBlock(REGISTER.LUT_START + index, source)
+	static async setLUTValue(bus: I2CAddressedBus, buffer: BufferSource) {
+		return bus.writeI2cBlock(REGISTER.LUTVAL, buffer)
 	}
 
-	static async getProfile(bus: I2CAddressedBus) {
 
-		const controls = await Common.getControls(bus)
+	static async getLUT(bus: I2CAddressedBus, offset: number, count: number) {
+		return bus.readI2cBlock(REGISTER.LUT_START + offset, count * LUT_BYTE_PER_ENTRY)
+	}
 
-		const [ ivr, lutAddr, wiper, temp, volt, lut ] = await Promise.all([
-			Common.getIVR(bus),
-			Common.getLUTIndex(bus),
-			Common.getWIPER(bus),
-			Common.getTemperature(bus),
-			Common.getVoltage(bus),
-			Common.getLUT(bus)
-		])
-
-		return {
-			...controls,
-			value: ivr,
-			lutAddr,
-			wiper,
-			temp,
-			volt,
-			lut
-		}
+	static async setLUT(bus: I2CAddressedBus, offset: number, buffer: BufferSource) {
+		return bus.writeI2cBlock(REGISTER.LUT_START + offset, buffer)
 	}
 }

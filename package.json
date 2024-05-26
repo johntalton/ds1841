@@ -1,11 +1,16 @@
 {
 	"name": "@johntalton/ds1841",
-	"version": "1.0.1",
+	"version": "2.0.0",
 	"type": "module",
 	"exports": {
 		".": "./lib/index.js"
 	},
-	"files": [ "./src/**/*.ts", "./lib/**/*.d.ts", "./lib/**/*.map", "./lib/**/*.js" ],
+	"files": [
+		"./src/**/*.ts",
+		"./lib/**/*.d.ts",
+		"./lib/**/*.map",
+		"./lib/**/*.js"
+],
 	"scripts": {
 		"build": "tsc",
 		"build:watch": "tsc --watch"

@@ -18,6 +18,8 @@ export type Controls = Control0 & Control1 & Control2
 
 // ---
 
+export const DEFAULT_ADDRESS = 0x28
+
 export const REGISTER = {
 	IVR: 0x00,
 	CR0: 0x02,

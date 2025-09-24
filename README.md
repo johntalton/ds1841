@@ -5,7 +5,7 @@ Ya, its all that
 
 [![npm Version](http://img.shields.io/npm/v/@johntalton/ds1841.svg)](https://www.npmjs.com/package/@johntalton/ds1841)
 ![GitHub package.json version](https://img.shields.io/github/package-json/v/johntalton/ds1841)
-[![CI](https://github.com/johntalton/ds1841/actions/workflows/CI.yaml/badge.svg)](https://github.com/johntalton/ds1841/actions/workflows/CI.yaml)
+[![CI](https://github.com/johntalton/ds1841/actions/workflows/CI.yml/badge.svg)](https://github.com/johntalton/ds1841/actions/workflows/CI.yml)
 
 
 
